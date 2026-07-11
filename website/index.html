@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fitness Buddy AI — Powered by IBM watsonx Orchestrate</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════════════╗
+  ║              AGENT INSTRUCTIONS — IBM watsonx Orchestrate                       ║
+  ║  Configure the Fitness Buddy AI agent's behavior inside Orchestrate Skills.      ║
+  ╠══════════════════════════════════════════════════════════════════════════════════╣
+  ║                                                                                  ║
+  ║  SYSTEM PROMPT / PERSONA                                                         ║
+  ║  ─────────────────────────────────────────────────────────────────────────────   ║
+  ║  You are Fitness Buddy AI, a certified virtual fitness & nutrition coach.         ║
+  ║  Your tone is: motivating, empathetic, science-backed, and culturally aware.     ║
+  ║  You NEVER replace a licensed medical professional; always add a disclaimer      ║
+  ║  when discussing injuries, medical conditions, or clinical weight loss.          ║
+  ║                                                                                  ║
+  ║  SPECIALIZATIONS                                                                 ║
+  ║  ─────────────────────────────────────────────────────────────────────────────   ║
+  ║  • Strength training (progressive overload, hypertrophy, powerlifting)           ║
+  ║  • Weight loss / body recomposition                                              ║
+  ║  • Yoga, mobility & flexibility programming                                      ║
+  ║  • HIIT, cardio & endurance coaching                                             ║
+  ║  • Sports-specific conditioning                                                  ║
+  ║  • Postural correction & desk-worker wellness                                    ║
+  ║                                                                                  ║
+  ║  INDIAN FOOD & DIET PREFERENCES                                                  ║
+  ║  ─────────────────────────────────────────────────────────────────────────────   ║
+  ║  Prioritise Indian food options wherever possible:                               ║
+  ║  • Prefer dal, paneer, curd, roti, rice, idli, dosa, sabzi, sprouts, nuts        ║
+  ║  • Suggest regional variety: South Indian, Punjabi, Bengali, Gujarati, etc.      ║
+  ║  • Respect vegetarian / vegan / Jain dietary restrictions on request             ║
+  ║  • Convert Western recipes to Indian equivalents when asked                      ║
+  ║  • Use Indian household measurements (katori, cup, tablespoon)                   ║
+  ║  • Account for Indian eating patterns: 3 main meals + 1-2 light snacks           ║
+  ║  • High-protein Indian sources: moong dal, chana, rajma, soya, tofu, eggs, fish  ║
+  ║                                                                                  ║
+  ║  WORKOUT PLAN GENERATION RULES                                                   ║
+  ║  ─────────────────────────────────────────────────────────────────────────────   ║
+  ║  • Always ask for: age, weight, height, goal, fitness level, days/week           ║
+  ║  • Generate structured weekly splits (Push/Pull/Legs, Full Body, etc.)           ║
+  ║  • Include warm-up (5–10 min) and cool-down (5 min) in every plan               ║
+  ║  • Provide sets × reps, rest intervals, and RPE where appropriate               ║
+  ║  • Offer beginner/intermediate/advanced progressions                             ║
+  ║                                                                                  ║
+  ║  CALORIE & MACRO ANALYSIS RULES                                                  ║
+  ║  ─────────────────────────────────────────────────────────────────────────────   ║
+  ║  • Use Mifflin-St Jeor for BMR; multiply by activity factor for TDEE             ║
+  ║  • Default macro split: 30% protein, 40% carbs, 30% fat (adjust per goal)       ║
+  ║  • Provide per-meal breakdown upon request                                       ║
+  ║  • Flag potential nutrient deficiencies (B12, Iron, Calcium, D3) in Indian diets ║
+  ║                                                                                  ║
+  ║  SAFETY RULES (NON-NEGOTIABLE)                                                   ║
+  ║  ─────────────────────────────────────────────────────────────────────────────   ║
+  ║  • Never recommend below 1200 kcal/day for women or 1500 kcal/day for men       ║
+  ║  • Flag extreme deficit requests and suggest consulting a dietitian              ║
+  ║  • Do not prescribe medication, supplements without noting risks                 ║
+  ║  • Always recommend rest days (minimum 1–2 per week)                            ║
+  ║  • For injury mentions: suggest rest, ice/heat, and GP consultation              ║
+  ║                                                                                  ║
+  ║  RESPONSE FORMAT                                                                 ║
+  ║  ─────────────────────────────────────────────────────────────────────────────   ║
+  ║  • Use markdown headers and bullet points for plans                              ║
+  ║  • Emoji usage: moderate (✅ ⚡ 🥗 💪) for readability                          ║
+  ║  • Keep each response under 600 words unless a full plan is requested            ║
+  ║  • Always end with a motivational sign-off                                       ║
+  ║                                                                                  ║
+  ║  HOW TO UPDATE IN ORCHESTRATE                                                    ║
+  ║  ─────────────────────────────────────────────────────────────────────────────   ║
+  ║  1. Login to IBM watsonx Orchestrate                                             ║
+  ║  2. Navigate to: Agent Builder → Your Agent → System Prompt                     ║
+  ║  3. Copy the text from SYSTEM PROMPT / PERSONA above as the base prompt         ║
+  ║  4. Add SPECIALIZATIONS & SAFETY RULES as structured skill instructions         ║
+  ║  5. Save and republish the agent                                                 ║
+  ║  6. Replace the snippet in index.html → <script id="WatsonAssistantChatEntry">  ║
+  ║     with your new embed snippet from Orchestrate → Embed → Web Chat             ║
+  ╚══════════════════════════════════════════════════════════════════════════════════╝
+-->
+
+<body>
+
+  <!-- ───────────────────────── NAVBAR ───────────────────────── -->
+  <nav class="navbar navbar-expand-lg fixed-top glass-nav">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <div class="brand-icon"><i class="bi bi-activity"></i></div>
+        <span class="brand-name">Fitness Buddy <span class="accent">AI</span></span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-center gap-1">
+          <li class="nav-item"><a class="nav-link nav-pill active" href="#dashboard">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link nav-pill" href="#workouts">Workouts</a></li>
+          <li class="nav-item"><a class="nav-link nav-pill" href="#nutrition">Nutrition</a></li>
+          <li class="nav-item"><a class="nav-link nav-pill" href="#profile">Profile</a></li>
+          <li class="nav-item ms-2">
+            <button id="themeToggle" class="btn btn-sm theme-toggle-btn" title="Toggle Theme">
+              <i class="bi bi-moon-stars-fill"></i>
+            </button>
+          </li>
+          <li class="nav-item ms-1">
+            <button class="btn btn-sm btn-chat-open" id="openChatBtn">
+              <i class="bi bi-robot me-1"></i> Ask AI
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ───────────────────────── HERO ───────────────────────── -->
+  <section class="hero-section" id="home">
+    <div class="hero-bg-anim"></div>
+    <div class="container text-center hero-content">
+      <div class="hero-badge mb-3 animate-fade-in">
+        <i class="bi bi-stars me-1"></i> Powered by IBM watsonx Orchestrate
+      </div>
+      <h1 class="hero-title animate-slide-up">
+        Your AI Fitness Coach,<br/>
+        <span class="gradient-text">Always Ready.</span>
+      </h1>
+      <p class="hero-subtitle animate-slide-up delay-1">
+        Personalized workout plans, calorie tracking, Indian diet recommendations,
+        and real-time coaching — all in one intelligent platform.
+      </p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap animate-slide-up delay-2">
+        <button class="btn btn-primary-custom btn-lg" id="heroStartBtn">
+          <i class="bi bi-lightning-charge-fill me-2"></i>Start Your Journey
+        </button>
+        <a class="btn btn-outline-custom btn-lg" href="#dashboard">
+          <i class="bi bi-bar-chart-line me-2"></i>View Dashboard
+        </a>
+      </div>
+      <div class="hero-stats animate-fade-in delay-3">
+        <div class="stat-pill"><span class="stat-num" data-target="50">0</span>+ Workouts</div>
+        <div class="stat-pill"><span class="stat-num" data-target="200">0</span>+ Diet Plans</div>
+        <div class="stat-pill"><span class="stat-num" data-target="99">0</span>% AI Accuracy</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── DASHBOARD ───────────────────────── -->
+  <section class="section-container" id="dashboard">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title"><i class="bi bi-speedometer2 me-2 accent"></i>Fitness Dashboard</h2>
+        <p class="section-sub">Your personalized health overview for today</p>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="row g-4 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="kpi-card kpi-orange animate-card" data-delay="0">
+            <div class="kpi-icon"><i class="bi bi-fire"></i></div>
+            <div class="kpi-value" id="kpiCalories">1,840</div>
+            <div class="kpi-label">Calories Burned</div>
+            <div class="kpi-trend up"><i class="bi bi-arrow-up-right"></i> +12% vs yesterday</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="kpi-card kpi-blue animate-card" data-delay="100">
+            <div class="kpi-icon"><i class="bi bi-droplet-half"></i></div>
+            <div class="kpi-value" id="kpiWater">2.4L</div>
+            <div class="kpi-label">Water Intake</div>
+            <div class="kpi-trend up"><i class="bi bi-arrow-up-right"></i> Goal: 3L</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="kpi-card kpi-green animate-card" data-delay="200">
+            <div class="kpi-icon"><i class="bi bi-person-walking"></i></div>
+            <div class="kpi-value" id="kpiSteps">8,420</div>
+            <div class="kpi-label">Steps Today</div>
+            <div class="kpi-trend up"><i class="bi bi-arrow-up-right"></i> 84% of goal</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="kpi-card kpi-purple animate-card" data-delay="300">
+            <div class="kpi-icon"><i class="bi bi-heart-pulse"></i></div>
+            <div class="kpi-value" id="kpiHR">72 bpm</div>
+            <div class="kpi-label">Resting Heart Rate</div>
+            <div class="kpi-trend neutral"><i class="bi bi-dash"></i> Normal range</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Progress + Macro Ring -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span><i class="bi bi-bar-chart-fill me-2"></i>Weekly Activity</span>
+              <div class="chart-legend">
+                <span class="legend-dot orange"></span>Calories
+                <span class="legend-dot blue ms-3"></span>Steps (×100)
+              </div>
+            </div>
+            <div class="chart-area">
+              <canvas id="weeklyChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="chart-card h-100 d-flex flex-column">
+            <div class="chart-card-header"><span><i class="bi bi-pie-chart-fill me-2"></i>Today's Macros</span></div>
+            <div class="macro-ring-wrapper flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+              <canvas id="macroRing" width="180" height="180"></canvas>
+              <div class="macro-legend mt-3">
+                <div class="macro-item"><span class="dot protein"></span>Protein <strong id="macroProtein">140g</strong></div>
+                <div class="macro-item"><span class="dot carbs"></span>Carbs <strong id="macroCarbs">210g</strong></div>
+                <div class="macro-item"><span class="dot fat"></span>Fat <strong id="macroFat">58g</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Cards -->
+      <div class="row g-3">
+        <div class="col-6 col-md-3">
+          <button class="quick-action-card w-100" onclick="scrollToSection('workouts')">
+            <i class="bi bi-dumbbell"></i><span>Today's Workout</span>
+          </button>
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="quick-action-card w-100" onclick="scrollToSection('nutrition')">
+            <i class="bi bi-egg-fried"></i><span>Meal Planner</span>
+          </button>
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="quick-action-card w-100" id="quickCalcBtn">
+            <i class="bi bi-calculator"></i><span>Macro Calc</span>
+          </button>
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="quick-action-card w-100" id="quickAskBtn">
+            <i class="bi bi-robot"></i><span>Ask AI Coach</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── WORKOUTS ───────────────────────── -->
+  <section class="section-container section-alt" id="workouts">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title"><i class="bi bi-dumbbell me-2 accent"></i>Workout Planner</h2>
+        <p class="section-sub">Choose a plan or let the AI build one for you</p>
+      </div>
+
+      <!-- Day Selector -->
+      <div class="day-selector mb-4" id="daySelectorRow">
+        <button class="day-btn active" data-day="0">Mon</button>
+        <button class="day-btn" data-day="1">Tue</button>
+        <button class="day-btn" data-day="2">Wed</button>
+        <button class="day-btn" data-day="3">Thu</button>
+        <button class="day-btn" data-day="4">Fri</button>
+        <button class="day-btn" data-day="5">Sat</button>
+        <button class="day-btn rest" data-day="6">Sun <small>REST</small></button>
+      </div>
+
+      <!-- Workout Cards -->
+      <div class="row g-4" id="workoutCardsRow">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- AI Plan Generator Panel -->
+      <div class="ai-panel mt-5">
+        <div class="ai-panel-header">
+          <i class="bi bi-robot me-2"></i>
+          <span>Generate a Custom AI Workout Plan</span>
+          <span class="badge-ai ms-auto">watsonx Orchestrate</span>
+        </div>
+        <div class="ai-panel-body">
+          <div class="row g-3">
+            <div class="col-sm-6 col-md-3">
+              <label class="form-label-custom">Fitness Goal</label>
+              <select class="input-custom" id="aiGoal">
+                <option value="weight_loss">Weight Loss</option>
+                <option value="muscle_gain">Muscle Gain</option>
+                <option value="endurance">Endurance</option>
+                <option value="flexibility">Flexibility / Yoga</option>
+                <option value="recomp">Body Recomposition</option>
+              </select>
+            </div>
+            <div class="col-sm-6 col-md-3">
+              <label class="form-label-custom">Fitness Level</label>
+              <select class="input-custom" id="aiLevel">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            <div class="col-sm-6 col-md-3">
+              <label class="form-label-custom">Days / Week</label>
+              <select class="input-custom" id="aiDays">
+                <option value="3">3 days</option>
+                <option value="4">4 days</option>
+                <option value="5" selected>5 days</option>
+                <option value="6">6 days</option>
+              </select>
+            </div>
+            <div class="col-sm-6 col-md-3">
+              <label class="form-label-custom">Equipment</label>
+              <select class="input-custom" id="aiEquip">
+                <option value="gym">Full Gym</option>
+                <option value="home">Home / Bodyweight</option>
+                <option value="dumbbells">Dumbbells Only</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-generate mt-4" id="generatePlanBtn">
+            <i class="bi bi-lightning-charge-fill me-2"></i>Generate AI Plan
+          </button>
+          <div id="aiPlanResult" class="ai-plan-result mt-4 d-none"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── NUTRITION ───────────────────────── -->
+  <section class="section-container" id="nutrition">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title"><i class="bi bi-egg-fried me-2 accent"></i>Nutrition & Macro Calculator</h2>
+        <p class="section-sub">Indian diet-aware calorie & macro planning</p>
+      </div>
+
+      <div class="row g-4">
+        <!-- Macro Calculator -->
+        <div class="col-lg-6">
+          <div class="calc-card">
+            <h5 class="calc-title"><i class="bi bi-calculator me-2"></i>Macro Calculator</h5>
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label-custom">Age</label>
+                <input type="number" class="input-custom" id="calcAge" placeholder="e.g. 25" min="10" max="100" />
+              </div>
+              <div class="col-6">
+                <label class="form-label-custom">Gender</label>
+                <select class="input-custom" id="calcGender">
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label-custom">Weight (kg)</label>
+                <input type="number" class="input-custom" id="calcWeight" placeholder="e.g. 72" min="30" max="250" />
+              </div>
+              <div class="col-6">
+                <label class="form-label-custom">Height (cm)</label>
+                <input type="number" class="input-custom" id="calcHeight" placeholder="e.g. 175" min="100" max="250" />
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom">Activity Level</label>
+                <select class="input-custom" id="calcActivity">
+                  <option value="1.2">Sedentary (desk job)</option>
+                  <option value="1.375">Lightly Active (1–3 days/wk)</option>
+                  <option value="1.55" selected>Moderately Active (3–5 days/wk)</option>
+                  <option value="1.725">Very Active (6–7 days/wk)</option>
+                  <option value="1.9">Athlete (2× training/day)</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom">Goal</label>
+                <div class="goal-pills" id="goalPills">
+                  <button class="goal-pill active" data-goal="maintain">Maintain</button>
+                  <button class="goal-pill" data-goal="cut">Cut (-500 kcal)</button>
+                  <button class="goal-pill" data-goal="bulk">Bulk (+300 kcal)</button>
+                </div>
+              </div>
+              <div class="col-12">
+                <button class="btn-calculate w-100" id="calcBtn">
+                  <i class="bi bi-calculator me-2"></i>Calculate Macros
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results + Indian Meal Suggestions -->
+        <div class="col-lg-6">
+          <div class="result-card" id="macroResultCard">
+            <div class="result-placeholder" id="resultPlaceholder">
+              <i class="bi bi-arrow-left-circle"></i>
+              <p>Fill in your details and hit Calculate</p>
+            </div>
+            <div id="macroResults" class="d-none">
+              <h5 class="calc-title mb-4"><i class="bi bi-fire me-2"></i>Your Results</h5>
+              <div class="row g-3 mb-4">
+                <div class="col-6">
+                  <div class="result-stat"><div class="rs-label">BMR</div><div class="rs-val" id="resBMR">—</div></div>
+                </div>
+                <div class="col-6">
+                  <div class="result-stat highlight"><div class="rs-label">TDEE</div><div class="rs-val" id="resTDEE">—</div></div>
+                </div>
+                <div class="col-6">
+                  <div class="result-stat"><div class="rs-label">Target Calories</div><div class="rs-val" id="resTarget">—</div></div>
+                </div>
+                <div class="col-6">
+                  <div class="result-stat"><div class="rs-label">BMI</div><div class="rs-val" id="resBMI">—</div></div>
+                </div>
+              </div>
+              <div class="macro-bars" id="macroBars"></div>
+              <div class="indian-meals mt-4" id="indianMeals"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Indian Meal Planner -->
+      <div class="row g-4 mt-2">
+        <div class="col-12">
+          <div class="meal-planner-card">
+            <div class="meal-planner-header">
+              <i class="bi bi-calendar2-week me-2"></i>Sample Indian High-Protein Day Plan
+              <span class="badge-ai ms-auto">AI-curated</span>
+            </div>
+            <div class="row g-3 mt-1" id="indianMealCards">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── PROFILE ───────────────────────── -->
+  <section class="section-container section-alt" id="profile">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title"><i class="bi bi-person-circle me-2 accent"></i>User Profile</h2>
+        <p class="section-sub">Personalize your fitness experience</p>
+      </div>
+      <div class="row g-4 justify-content-center">
+        <div class="col-lg-5">
+          <div class="profile-card">
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar" id="profileAvatarDisplay">RJ</div>
+              <button class="avatar-edit-btn" id="avatarEditBtn"><i class="bi bi-pencil-fill"></i></button>
+            </div>
+            <div class="profile-name" id="profileDisplayName">Rajan Joshi</div>
+            <div class="profile-tag">Intermediate • Weight Loss</div>
+            <div class="profile-stats-row">
+              <div class="ps-item"><div class="ps-val" id="pdWeight">72kg</div><div class="ps-lbl">Weight</div></div>
+              <div class="ps-item"><div class="ps-val" id="pdHeight">175cm</div><div class="ps-lbl">Height</div></div>
+              <div class="ps-item"><div class="ps-val" id="pdBMI">23.5</div><div class="ps-lbl">BMI</div></div>
+              <div class="ps-item"><div class="ps-val" id="pdStreak">14</div><div class="ps-lbl">Day Streak</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="profile-edit-card">
+            <h5 class="calc-title mb-4"><i class="bi bi-sliders2 me-2"></i>Edit Profile</h5>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="form-label-custom">Full Name</label>
+                <input type="text" class="input-custom" id="profileName" value="Rajan Joshi" />
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label-custom">Email</label>
+                <input type="email" class="input-custom" id="profileEmail" value="rajan@example.com" />
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label-custom">Age</label>
+                <input type="number" class="input-custom" id="profileAge" value="28" />
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label-custom">Weight (kg)</label>
+                <input type="number" class="input-custom" id="profileWeight" value="72" />
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label-custom">Height (cm)</label>
+                <input type="number" class="input-custom" id="profileHeight" value="175" />
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label-custom">Diet Preference</label>
+                <select class="input-custom" id="profileDiet">
+                  <option>Vegetarian</option>
+                  <option>Non-Vegetarian</option>
+                  <option>Vegan</option>
+                  <option>Jain</option>
+                  <option>Eggetarian</option>
+                </select>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label-custom">Primary Goal</label>
+                <select class="input-custom" id="profileGoal">
+                  <option>Weight Loss</option>
+                  <option>Muscle Gain</option>
+                  <option>Body Recomposition</option>
+                  <option>Endurance</option>
+                  <option>Maintain Fitness</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom">Health Conditions (optional)</label>
+                <input type="text" class="input-custom" id="profileConditions" placeholder="e.g. Diabetes, Hypertension, None" />
+              </div>
+              <div class="col-12">
+                <button class="btn-calculate w-100" id="saveProfileBtn">
+                  <i class="bi bi-check-circle me-2"></i>Save Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── FOOTER ───────────────────────── -->
+  <footer class="site-footer">
+    <div class="container text-center">
+      <div class="footer-logo mb-2"><i class="bi bi-activity me-1"></i>Fitness Buddy <span class="accent">AI</span></div>
+      <p class="footer-text">Powered by <strong>IBM watsonx Orchestrate</strong> · Built for your wellness journey</p>
+      <p class="footer-disclaimer">⚠️ This tool is for informational purposes only and does not replace professional medical or nutritional advice.</p>
+    </div>
+  </footer>
+
+  <!--
+    ┌─────────────────────────────────────────────────────────────────────┐
+    │  IMPORTANT — "Authentication Error" / CORS fix                      │
+    │                                                                     │
+    │  IBM watsonx Orchestrate's embed ONLY works when the page is        │
+    │  served over HTTP/HTTPS from a trusted origin.                      │
+    │                                                                     │
+    │  ✅ Works:  http://localhost:5500  (VS Code Live Server)            │
+    │  ✅ Works:  http://localhost:8080  (python -m http.server 8080)     │
+    │  ✅ Works:  https://yoursite.com   (any deployed HTTPS URL)         │
+    │  ❌ Fails:  file:///C:/…/index.html  (double-click open)            │
+    │                                                                     │
+    │  Also add your localhost URL to the allowed origins in Orchestrate: │
+    │  Orchestrate → Agent → Deploy → Embed → Allowed Origins            │
+    │  → Add:  http://localhost:5500  (or whichever port you use)        │
+    └─────────────────────────────────────────────────────────────────────┘
+  -->
+
+  <!-- Mount point required by wxoLoader -->
+  <div id="wxo-chat-root"></div>
+
+  <!-- ═══════════════════ EMBEDDED WATSONX ORCHESTRATE CHAT ═══════════════════
+       Live agent: Fitness Buddy AI (au-syd)
+       Orchestration ID : f7ad15f8dc08497098fc0af7f9877919_861c24df-25d9-4e62-93ee-37b2b0183da0
+       Agent ID         : c3e9d139-2f64-4b19-a4a9-688dfcb160fb
+       Environment ID   : cab47519-0c2e-4562-8e5f-664c95ead000
+       Region           : au-syd (Sydney)
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <script>
+    window.wxOConfiguration = {
+      orchestrationID:    "f7ad15f8dc08497098fc0af7f9877919_861c24df-25d9-4e62-93ee-37b2b0183da0",
+      hostURL:            "https://au-syd.watson-orchestrate.cloud.ibm.com",
+      rootElementID:      "wxo-chat-root",   /* must match the <div id> above */
+      deploymentPlatform: "ibmcloud",
+      crn:                "crn:v1:bluemix:public:watsonx-orchestrate:au-syd:a/f7ad15f8dc08497098fc0af7f9877919:861c24df-25d9-4e62-93ee-37b2b0183da0::",
+      chatOptions: {
+        agentId:            "c3e9d139-2f64-4b19-a4a9-688dfcb160fb",
+        agentEnvironmentId: "cab47519-0c2e-4562-8e5f-664c95ead000",
+      }
+    };
+    setTimeout(function () {
+      var script = document.createElement('script');
+      script.src = window.wxOConfiguration.hostURL + '/wxochat/wxoLoader.js?embed=true';
+      script.addEventListener('load', function () {
+        wxoLoader.init();
+      });
+      script.addEventListener('error', function () {
+        console.warn('[Fitness Buddy AI] wxoLoader failed to load. ' +
+          'Ensure the page is served over HTTP (not file://) and ' +
+          'http://localhost:<port> is listed in Orchestrate → Embed → Allowed Origins.');
+      });
+      document.head.appendChild(script);
+    }, 0);
+  </script>
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <!-- App Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
